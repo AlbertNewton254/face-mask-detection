@@ -2,6 +2,11 @@
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
 
+# Python cache
+__pycache__
+*/__pycache__/*
+*.pyc
+
 # IPython
 profile_default/
 ipython_config.py
@@ -17,3 +22,7 @@ model/**
 # runs/
 runs/*
 runs/**
+
+# data/
+data/*
+data/**
