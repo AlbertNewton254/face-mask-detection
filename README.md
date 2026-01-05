@@ -165,6 +165,83 @@ for result in results:
 results = model.predict(source='path/to/images/', conf=0.5, batch=16)
 ```
 
+## Object Tracking with Tracker
+
+The project includes a real-time object tracking script (`src/tracking.py`) that extends detection capabilities by tracking individual masks across video frames. This is useful for:
+
+- **Person Identification**: Track the same person across multiple frames
+- **Compliance Monitoring**: Monitor mask compliance over time
+- **Crowd Analysis**: Count unique individuals and their mask status
+- **Video Analysis**: Process video streams or webcam feeds
+
+### Running the Tracker
+
+#### Webcam Stream (Default)
+
+```bash
+cd src
+python3 tracking.py
+```
+
+#### With ByteTrack (Default)
+
+```bash
+python3 tracking.py --bytetrack
+```
+
+#### With BotSORT Tracker
+
+```bash
+python3 tracking.py --botsort
+```
+
+#### Video File Input
+
+```bash
+python3 tracking.py --source path/to/video.mp4
+```
+
+### Tracker Options
+
+The tracking script supports various command-line arguments:
+
+| Argument | Type | Default | Description |
+|----------|------|---------|-------------|
+| `--bytetrack` | flag | - | Use ByteTrack tracker (default) |
+| `--botsort` | flag | - | Use BotSORT tracker |
+| `--source` | str | `0` | Video source (0 for webcam, path for video file, URL for stream) |
+| `--conf` | float | `0.5` | Confidence threshold for detections |
+| `--iou` | float | `0.5` | IoU threshold for NMS |
+| `--device` | str | None | Device to run on (cuda, cpu, 0, 1, etc.) |
+| `--no-show` | flag | False | Disable displaying the video output |
+| `--save` | flag | False | Save the output video |
+| `--model-path` | str | `../model/face_mask_yolo/weights/best.pt` | Path to model weights |
+
+### Tracker Comparison
+
+- **ByteTrack**: Fast, lightweight tracker suitable for real-time applications
+- **BotSORT**: More robust tracker with better handling of occlusions and crowded scenes
+
+### Example Usage
+
+Track masks from webcam with BotSORT and save output:
+
+```bash
+python3 tracking.py --botsort --save --device cuda
+```
+
+Track from a video file with ByteTrack at custom confidence threshold:
+
+```bash
+python3 tracking.py --source video.mp4 --bytetrack --conf 0.6
+```
+
+Track from a USB camera (device 1) without displaying output:
+
+```bash
+python3 tracking.py --source 1 --no-show
+```
+
 ## Limitations and Future Improvements
 
 ### Current Limitations
