@@ -68,16 +68,15 @@ face-mask-detection/
 │       ├── args.yaml
 │       └── results.csv
 ├── runs/                         # YOLO validation/detection runs
-├── face_mask_detection.ipynb     # Original Jupyter notebook (archive)
 ├── MODULARIZATION.md             # Detailed modularization guide
 ├── README.md                      # This file
 ├── LICENSE
 └── requirements.txt
 ```
 
-## New: Modularized Architecture
+## Architecture
 
-The project has been refactored from a monolithic Jupyter notebook into **modular Python components** for better maintainability, reusability, and automation. See [MODULARIZATION.md](MODULARIZATION.md) for detailed documentation.
+This project uses **modular Python components** for better maintainability, reusability, and automation. All functionality is implemented as standalone modules that can be used together via the CLI or imported individually in Python code. See [MODULARIZATION.md](MODULARIZATION.md) for detailed documentation.
 
 ### Core Modules
 
@@ -146,12 +145,6 @@ python main.py --mode evaluate --model-path ../model/face_mask_yolo/weights/best
 
 # Visualize predictions
 python main.py --mode visualize --model-path ../model/face_mask_yolo/weights/best.pt
-```
-
-### Running the Original Notebook
-
-```bash
-jupyter notebook face_mask_detection.ipynb
 ```
 
 ## Training Configuration
