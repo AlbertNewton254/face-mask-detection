@@ -35,21 +35,61 @@ The annotations are converted from **Pascal VOC** to **YOLO format** for maximum
 
 ```
 face-mask-detection/
-├── face_mask_detection.ipynb      # Main Jupyter notebook
-├── README.md                       # This file
-├── LICENSE                         # Project license
-├── yolov11n.pt                     # Pre-trained YOLOv11n model weights
-├── model/
-│   └── face_mask_yolo/             # Trained model artifacts
+├── src/                           # Modularized source code
+│   ├── __init__.py               # Package initialization
+│   ├── config.py                 # Configuration and hyperparameters
+│   ├── download.py               # Dataset download from Kaggle
+│   ├── parser.py                 # Pascal VOC annotation parsing
+│   ├── converter.py              # VOC to YOLO format conversion
+│   ├── train.py                  # Model training pipeline
+│   ├── evaluate.py               # Model evaluation and inference
+│   ├── visualize.py              # Visualization utilities
+│   ├── utils.py                  # Helper utilities
+│   ├── main.py                   # Pipeline orchestrator with CLI
+│   └── tracking.py               # Video object tracking
+├── data/                         # Dataset storage
+│   ├── images/                   # Original images
+│   ├── annotations/              # Original VOC XML annotations
+│   └── yolo_dataset/             # Converted YOLO format dataset
+│       ├── images/
+│       │   ├── train/
+│       │   ├── val/
+│       │   └── test/
+│       ├── labels/
+│       │   ├── train/
+│       │   ├── val/
+│       │   └── test/
+│       └── data.yaml
+├── model/                        # Model training outputs
+│   └── face_mask_yolo/
 │       ├── weights/
-│       │   ├── best.pt             # Best model weights
-│       │   └── last.pt             # Last epoch weights
-│       ├── args.yaml               # Training configuration
-│       └── results.csv             # Training metrics
-└── runs/
-    └── detect/
-        └── val/                    # Validation results
+│       │   ├── best.pt
+│       │   └── last.pt
+│       ├── args.yaml
+│       └── results.csv
+├── runs/                         # YOLO validation/detection runs
+├── face_mask_detection.ipynb     # Original Jupyter notebook (archive)
+├── MODULARIZATION.md             # Detailed modularization guide
+├── README.md                      # This file
+├── LICENSE
+└── requirements.txt
 ```
+
+## New: Modularized Architecture
+
+The project has been refactored from a monolithic Jupyter notebook into **modular Python components** for better maintainability, reusability, and automation. See [MODULARIZATION.md](MODULARIZATION.md) for detailed documentation.
+
+### Core Modules
+
+- **config.py**: Centralized configuration with hyperparameters and class mappings
+- **download.py**: Automated dataset download from Kaggle
+- **parser.py**: Pascal VOC XML annotation parsing utilities
+- **converter.py**: VOC to YOLO format conversion pipeline
+- **train.py**: Model training with YOLO support
+- **evaluate.py**: Model evaluation and inference capabilities
+- **visualize.py**: Visualization tools for annotations and predictions
+- **utils.py**: Reusable helper functions
+- **main.py**: CLI orchestrator for the complete pipeline
 
 ## Model Architecture: YOLOv11
 
@@ -70,34 +110,49 @@ This project uses **YOLOv11n** (nano variant) for fast inference on standard har
 
 ```bash
 python --version # Must be >= 3.10
-python -m venv .venv
-source ./.venv/bin/activate
+mamba create -n face-mask-detection python=3.10
+mamba activate face-mask-detection
 pip install -r requirements.txt
 ```
 
-### Running the Notebook
+### Running the Full Pipeline
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/AlbertNewton254/face-mask-detection.git
-   cd face-mask-detection
-   ```
+```bash
+cd src
+python main.py --mode full
+```
 
-2. Open and run the Jupyter notebook:
-   ```bash
-   jupyter notebook face_mask_detection.ipynb
-   ```
+This will:
+1. Download the dataset from Kaggle
+2. Convert annotations to YOLO format
+3. Display class distribution statistics
+4. Evaluate the pre-trained model
+5. Visualize predictions on test images
 
-### Notebook Sections
+### Individual Pipeline Modes
 
-1. **Dataset Overview**: Download and inspect the AndrewMVD Face Mask Detection dataset
-2. **YOLO-Compatible Data Pipeline**: Convert Pascal VOC annotations to YOLO format
-3. **Dataset Verification**: Validate the converted dataset structure
-4. **Model Architecture**: Load YOLOv11n pretrained model
-5. **Training**: Fine-tune the model on face mask detection task
-6. **Training Results**: Visualize training metrics and progress
-7. **Evaluation**: Assess performance on test set
-8. **Visualization**: Display predictions vs ground truth on test images
+```bash
+# Download and prepare dataset
+python main.py --mode download --force-download
+
+# Convert to YOLO format
+python main.py --mode convert
+
+# Train model
+python main.py --mode train --yaml-path ../data/yolo_dataset/data.yaml
+
+# Evaluate model
+python main.py --mode evaluate --model-path ../model/face_mask_yolo/weights/best.pt
+
+# Visualize predictions
+python main.py --mode visualize --model-path ../model/face_mask_yolo/weights/best.pt
+```
+
+### Running the Original Notebook
+
+```bash
+jupyter notebook face_mask_detection.ipynb
+```
 
 ## Training Configuration
 
@@ -132,14 +187,58 @@ The trained model is evaluated using standard object detection metrics:
 
 ## Results
 
+### Test Set Performance
+
+The trained YOLOv11n model achieves the following metrics on the test set:
+
+| Metric | Value |
+|--------|-------|
+| **mAP50** | 0.7050 |
+| **mAP50-95** | 0.4524 |
+| **Precision** | 0.7275 |
+| **Recall** | 0.6606 |
+
+### Per-Class Performance
+
+| Class | AP50 |
+|-------|------|
+| with_mask | 0.9297 ⭐ (excellent) |
+| without_mask | 0.7860 ✓ (good) |
+| mask_weared_incorrect | 0.3994 ⚠️ (needs improvement) |
+
 Model weights and training artifacts are saved in the `model/face_mask_yolo/` directory:
 
 - `weights/best.pt`: Best performing model (used for inference)
 - `weights/last.pt`: Final epoch model
 - `results.csv`: Training metrics per epoch
-- `results.png`: Training visualization plots
+- Results visualization plots
 
 ## Usage Examples
+
+### Using Individual Modules
+
+All modules can be imported and used independently in your Python code:
+
+```python
+from src.download import download_dataset, get_dataset_paths
+from src.converter import convert_voc_to_yolo
+from src.train import train_model
+from src.evaluate import evaluate_model
+from src.visualize import predict_and_visualize
+
+# Download dataset
+dataset_path = download_dataset()
+images_dir, annotations_dir = get_dataset_paths(dataset_path)
+
+# Convert to YOLO format
+dataset_dir, yaml_path = convert_voc_to_yolo(images_dir, annotations_dir, 'data/yolo_dataset')
+
+# Train model
+model = train_model(yaml_path)
+
+# Evaluate
+results = evaluate_model('model/face_mask_yolo/weights/best.pt', yaml_path)
+```
 
 ### Loading and Using the Model
 
@@ -242,13 +341,29 @@ Track from a USB camera (device 1) without displaying output:
 python3 tracking.py --source 1 --no-show
 ```
 
+## Architecture & Design
+
+### Modularization Benefits
+
+The refactored architecture provides:
+
+✅ **Separation of Concerns** - Each module handles a specific task
+✅ **Reusability** - Import and use modules independently
+✅ **Testability** - Easier to write unit tests
+✅ **Maintainability** - Clear code organization
+✅ **Scalability** - Easy to extend functionality
+✅ **Automation** - CLI interface for pipeline orchestration
+
+For detailed information, see [MODULARIZATION.md](MODULARIZATION.md).
+
 ## Limitations and Future Improvements
 
 ### Current Limitations
 
 - Dataset may contain biases that affect real-world performance
-- Requires further testing in diverse scenarios
 - Model trained on specific hardware/conditions
+- `mask_weared_incorrect` class has lower accuracy (needs more training data)
+- Requires further testing in diverse scenarios
 
 ### Future Enhancements
 
