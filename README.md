@@ -69,7 +69,10 @@ This project uses **YOLOv11n** (nano variant) for fast inference on standard har
 ### Prerequisites
 
 ```bash
-pip install ultralytics ultralytics opencv-python matplotlib pillow beautifulsoup4 lxml pyyaml scikit-learn kagglehub torch torchvision
+python --version # Must be >= 3.10
+python -m venv .venv
+source ./.venv/bin/activate
+pip install -r requirements.txt
 ```
 
 ### Running the Notebook
